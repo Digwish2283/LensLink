@@ -28,7 +28,7 @@ It's a backend-driven marketplace where clients can discover creators by locatio
 
 | Layer | Technology |
 |---|---|
-| Language | Java 17 |
+| Language | Java 21 |
 | Framework | Spring Boot |
 | Security | Spring Security + JWT |
 | ORM | Spring Data JPA (Hibernate) |
