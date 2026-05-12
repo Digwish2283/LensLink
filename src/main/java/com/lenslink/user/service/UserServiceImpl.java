@@ -1,13 +1,16 @@
 package com.lenslink.user.service;
 
+import com.lenslink.common.exception.EmailAlreadyExistsException;
 import com.lenslink.user.dto.RegisterRequest;
 import com.lenslink.user.dto.UserResponse;
 import com.lenslink.user.entity.User;
 import com.lenslink.user.enums.Role;
 import com.lenslink.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import javax.crypto.ExemptionMechanismException;
 import java.util.Set;
 
 @Service
@@ -16,19 +19,22 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
 
+    private final PasswordEncoder passwordEncoder;
+
     @Override
     public UserResponse register(RegisterRequest request) {
 
         // duplicate email check
         userRepository.findByEmail(request.getEmail())
                 .ifPresent(user -> {
-                    throw new RuntimeException("Email already exists");
+                    throw new EmailAlreadyExistsException("Email already exists");
                 });
 
         // create user
         User user = new User();
         user.setEmail(request.getEmail());
-        user.setPassword(request.getPassword());
+        //user.setPassword(request.getPassword());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setRoles(Set.of(Role.CLIENT));

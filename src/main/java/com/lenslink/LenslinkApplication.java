@@ -9,5 +9,4 @@ public class LenslinkApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(LenslinkApplication.class, args);
 	}
-
 }
