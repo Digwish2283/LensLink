@@ -1,16 +1,20 @@
 package com.lenslink.user.service;
 
 import com.lenslink.common.exception.EmailAlreadyExistsException;
+import com.lenslink.security.jwt.JwtService;
+import com.lenslink.user.dto.LoginRequest;
+import com.lenslink.user.dto.LoginResponse;
 import com.lenslink.user.dto.RegisterRequest;
 import com.lenslink.user.dto.UserResponse;
 import com.lenslink.user.entity.User;
 import com.lenslink.user.enums.Role;
 import com.lenslink.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.ExemptionMechanismException;
 import java.util.Set;
 
 @Service
@@ -20,6 +24,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
 
     private final PasswordEncoder passwordEncoder;
+
+    private final AuthenticationManager authenticationManager;
+    private final JwtService jwtService;
 
     @Override
     public UserResponse register(RegisterRequest request) {
@@ -42,6 +49,30 @@ public class UserServiceImpl implements UserService {
         User savedUser = userRepository.save(user);
 
         return mapToResponse(savedUser);
+    }
+
+    @Override
+    public LoginResponse login(LoginRequest request) {
+
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() ->
+                        new RuntimeException("User not found"));
+
+        String token = jwtService.generateToken(user.getEmail());
+
+        return LoginResponse.builder()
+                .token(token)
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .build();
     }
 
     private UserResponse mapToResponse(User user) {
