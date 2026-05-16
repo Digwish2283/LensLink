@@ -1,4 +1,4 @@
-package com.lenslink.security;
+package com.lenslink.user.service;
 
 import com.lenslink.user.entity.User;
 import com.lenslink.user.repository.UserRepository;
